@@ -24,7 +24,7 @@ let remove_var vn env =
 (* TODO: add more auxiliary functions here *)
 
 (* TODO: fill in details *)
-let check_graph_types (DBG (ntdecls, rtdecls)) = Result.Ok ()
+let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
 
 (* TODO: fill in details *)
 let rec tp_expr env = function
@@ -45,7 +45,13 @@ let check_expr e et env : tc_result =
 
 let tc_instr (i: instruction) (env: environment) : tc_result = 
   match i with
-  | IActOnNode (_act, vn, lb) -> Result.Error ["not yet implemented"]
+  | IActOnNode (CreateAct, vn, lb) ->
+    if not (verif_label_declared lb env)
+    then Result.Error ["label non declare"]
+    else if verif_declared_var vn env
+    then Result.Error ["var deja declare"]
+    else Result.Ok (add_var_to_env vn lb env)
+
   | _  -> Result.Error ["also not implemented"]
 
 (* type check list of instructions and stop on error *)
@@ -82,11 +88,11 @@ let typecheck continue (NormProg(gt, NormQuery instrs) as np) =
 | (x :: xs) -> not (List.mem x xs) && (no_duplicates xs);;
 
 (* verify that types are unique (no duplicate declaration of a type) *)
-let types_unique ntdecls = 
-no_duplicates (List.map (fun (DBN(n, _)) -> n) ntdecls) 
+let types_unique list_node = 
+no_duplicates (List.map (fun (DBN(n, _)) -> n) list_node) 
 
 (* TODO: fill in details *)
-let check_graph_types (DBG (ntdecls, rtdecls)) = 
-   if types_unique ntdecls
+let check_graph_types (DBG (list_node, list_rel)) = 
+   if types_unique list_node
    then Result.Ok () 
    else Result.Error "duplicates"

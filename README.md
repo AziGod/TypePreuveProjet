@@ -1,5 +1,9 @@
 # TypePreuveProjet
 
+Nous avons découvert l'arcane, il faut compléter le fichier typing.ml,
+nous devons complété la fonction 'tc_instr' qui vérifie que les
+instructions sont typé correctement.
+
 
 opam install ocaml-lsp-server
 opam install menhir
