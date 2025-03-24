@@ -30,3 +30,34 @@ d’un lexer/parser avec ocamllex et menhir. Vous devez les compléter et les fo
 votre projet.
 
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Les étapes essentielles du projet sont :
+
+— Mise à jour et extension de l’analyse lexicale et syntaxique du langage MiniGQL, à l’aide des
+outils ocamllex et menhir (sect. 3.3).
+
+— Traduction du langage source vers un langage d’instructions plus simple (sect. 3.4).
+
+— Vérification des types du langage source (sect. 3.5).
+
+— Exécution de ces instructions pour obtenir une réponse à des requêtes (sect. 3.6).
+
+— Combinaison des étapes précédentes pour obtenir un exécutable (sect. 3.7).
+
+— Développement et exécution de tests (sect. 3.8).
+
+
+
+
+MiniGQL permet :
+— de construire des graphes, en créant des noeuds et des arcs,
+— de les modifier, en supprimant des noeuds ou arcs ou en changeant des attributs
+— d’interroger les graphes en cherchant des noeuds qui ont certaines propriétés (valeurs d’attributs
+ou relations avec d’autres noeuds)
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+truc qu'on a fait le 24/03 :
+- compléter le typing.ml --> tc_instr et check_graph_types (tester sur utop)
