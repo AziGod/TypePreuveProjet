@@ -39,7 +39,7 @@ outils ocamllex et menhir (sect. 3.3).
 
 — Traduction du langage source vers un langage d’instructions plus simple (sect. 3.4).
 
-— Vérification des types du langage source (sect. 3.5).
+— Vérification des types du langage source (sect. 3.5). FAIT
 
 — Exécution de ces instructions pour obtenir une réponse à des requêtes (sect. 3.6).
 
