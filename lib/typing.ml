@@ -67,6 +67,11 @@ let add_var_to_env (vn: vname) (lb: label) (env: environment) : environment =
 let remove_var_from_env (vn: vname) (env: environment) : environment =
   { env with bindings = List.remove_assoc vn env.bindings }
 
+(* Filtre l'environnement pour ne garder que les variables spécifiées dans la liste vn_list *)
+let filter_env_with_vars (vn_list: vname list) (env: environment) : environment =
+  let filtered_bindings = List.filter (fun (vn, _) -> List.mem vn vn_list) env.bindings in
+  { env with bindings = filtered_bindings }
+
 
 
 
@@ -162,20 +167,30 @@ let typecheck continue (NormProg(gt, NormQuery instrs) as np) =
 
 
 
-(* Returns true if list is without duplicates *)
+
+
+(* Vérifie que les types sont uniques et que les labels dans les relations sont déclarés dans les noeuds *)
+let check_graph_types (DBG (list_node, list_rel)) =
+  (* Fonction auxiliaire pour vérifier l'unicité des types *)
   let rec no_duplicates = function
-| [] -> true
-| (x :: xs) -> not (List.mem x xs) && (no_duplicates xs);;
+    | [] -> true
+    | (x :: xs) -> not (List.mem x xs) && (no_duplicates xs)
+  in
+  (* Vérifie que les types sont uniques *)
+  let types_unique list_node =
+    no_duplicates (List.map (fun (DBN(n, _)) -> n) list_node)
+  in
+  (* Vérifie que tous les labels des relations sont déclarés dans les noeuds *)
+  let labels_declared_in_relations list_node list_rel =
+    let declared_labels = List.map (fun (DBN(n, _)) -> n) list_node in
+    List.for_all (fun (DBR(n1, _, n2)) -> List.mem n1 declared_labels && List.mem n2 declared_labels) list_rel
+  in
+  (* Vérification des doublons et des labels dans les relations *)
+  if types_unique list_node && labels_declared_in_relations list_node list_rel then
+    Result.Ok ()  (* Aucun problème détecté *)
+  else
+    Result.Error "Types sont dupliqués ou relation fait référence à un label non déclaré"
 
-(* verify that types are unique (no duplicate declaration of a type) *)
-let types_unique list_node = 
-no_duplicates (List.map (fun (DBN(n, _)) -> n) list_node) 
-
-(* TODO: fill in details *)
-let check_graph_types (DBG (list_node, list_rel)) = 
-   if types_unique list_node
-   then Result.Ok () 
-   else Result.Error "duplicates"
 
 
 
