@@ -26,6 +26,7 @@ let remove_var vn env =
 (* TODO: fill in details *)
 let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
 
+
 (* TODO: fill in details *)
 let rec tp_expr env = function
   Const v -> IntT
@@ -43,16 +44,95 @@ let check_expr e et env : tc_result =
   | FieldAccError s -> Result.Error [s]
   
 
+
+
+
+
+(* Fonctions utilisées dans tc_instr *)
+(* Vérifie si un label est déclaré dans l'environnement *)
+let verif_label_declared (lb: label) (env: environment) : bool =
+  match env.types with
+  | DBG (list_node, _) -> 
+      List.exists (fun (DBN(n, _)) -> n = lb) list_node
+
+(* Vérifie si une variable est déclarée dans l'environnement *)
+let verif_declared_var (vn: vname) (env: environment) : bool =
+  List.exists (fun (declared_vn, _) -> declared_vn = vn) env.bindings
+
+(* Ajoute une variable avec son label dans l'environnement *)
+let add_var_to_env (vn: vname) (lb: label) (env: environment) : environment =
+  { env with bindings = (vn, lb) :: env.bindings }
+
+(* Supprime une variable de l'environnement *)
+let remove_var_from_env (vn: vname) (env: environment) : environment =
+  { env with bindings = List.remove_assoc vn env.bindings }
+
+
+
+
 let tc_instr (i: instruction) (env: environment) : tc_result = 
   match i with
-  | IActOnNode (CreateAct, vn, lb) ->
-    if not (verif_label_declared lb env)
-    then Result.Error ["label non declare"]
-    else if verif_declared_var vn env
-    then Result.Error ["var deja declare"]
-    else Result.Ok (add_var_to_env vn lb env)
+  | IActOnNode (_, vn, lb) ->
+    if not (verif_label_declared lb env) then 
+      Result.Error ["label non déclaré"]
+    else if verif_declared_var vn env then 
+      Result.Error ["variable déjà déclarée"]
+    else 
+      Result.Ok (add_var_to_env vn lb env)
 
-  | _  -> Result.Error ["also not implemented"]
+
+  | IActOnRel (_, vn, lb, v2) ->
+    if not (verif_label_declared lb env) then 
+      Result.Error ["label non déclaré"]
+    else if not (verif_declared_var vn env) then 
+      Result.Error ["première variable non déclarée"]
+    else if not (verif_declared_var v2 env) then 
+      Result.Error ["deuxième variable non déclarée"]
+    else 
+      Result.Ok env  (* L’environnement reste inchangé *)
+
+
+  | IDeleteNode vn ->
+    if not (verif_declared_var vn env) then 
+      Result.Error ["variable non déclarée"]
+    else 
+      Result.Ok (remove_var_from_env vn env)  (* Supprime la variable de l’environnement *)
+    
+
+  | IReturn vn_list ->
+    if not (List.for_all (fun vn -> verif_declared_var vn env) vn_list) then 
+      Result.Error ["une ou plusieurs variables retournées ne sont pas déclarées"]
+    else 
+      Result.Ok (filter_env_with_vars vn_list env)  (* Ne garde que les variables retournées *)
+    
+
+  | IWhere expr ->
+    let expr_type = tp_expr env expr in
+    if expr_type <> BoolT then 
+      Result.Error ["l'expression WHERE doit être de type booléen"]
+    else 
+      Result.Ok env  (* L’environnement ne change pas *)
+
+
+  | ISet (vn, fn, expr) ->
+    (* Il faut vérifier que lors d’une affectation de la forme marie.age = 25, l’expression affectée
+    est bien typée et correspond au type de l’attribut. L’environnement ne change pas *)
+    Result.Error [""]
+
+
+    
+  | _  -> Result.Error ["instruction non implémentée"]
+
+
+
+
+  
+
+
+
+
+
+  
 
 (* type check list of instructions and stop on error *)
 let check_and_stop (res : tc_result) i : tc_result = Result.bind res (tc_instr i)
@@ -96,3 +176,22 @@ let check_graph_types (DBG (list_node, list_rel)) =
    if types_unique list_node
    then Result.Ok () 
    else Result.Error "duplicates"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

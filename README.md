@@ -10,6 +10,8 @@ opam install menhir
 opam install ppx_deriving
 opam install ocamlgraph
 
+eval $(opam env)
+
 dune build
 dune exec Proj_GraphDB
 
