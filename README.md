@@ -6,11 +6,13 @@ instructions sont typé correctement.
 
 
 opam install ocaml-lsp-server
+eval $(opam env)
+
 opam install menhir
 opam install ppx_deriving
 opam install ocamlgraph
-
 eval $(opam env)
+
 
 dune build
 dune exec Proj_GraphDB

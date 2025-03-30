@@ -1,9 +1,9 @@
-# dune exec Proj_GraphDB
+# dune exec Proj_GraphDB f
 # OCAMLPARAM: unset
 # Shared cache: enabled-except-user-rules
-# Shared cache location: /home/alecourt/.cache/dune/db
-# Workspace root: /home/alecourt/TypePreuveProjet
-# Auto-detected concurrency: 4
+# Shared cache location: /root/.cache/dune/db
+# Workspace root: /mnt/c/Users/thiba/Downloads/FAC/L3/TypePreuveProjet
+# Auto-detected concurrency: 12
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -13,4 +13,53 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /usr/bin/ocamlc.opt -config > /tmp/dune_77ed19_output
+$ /root/.opam/4.14.0/bin/ocamlc.opt -config > /tmp/dune_c2c838_output
+$ (cd _build/.sandbox/3a15414e81020551c547b0ed8cc61ee0/default && /root/.opam/4.14.0/bin/menhir --explain lib/parser.mly --base lib/parser --infer-read-reply lib/parser__mock.mli.inferred)
+> File "lib/parser.mly", line 23, characters 0-5:
+> Warning: the precedence level assigned to ADD is never useful.
+> File "lib/parser.mly", line 21, characters 0-5:
+> Warning: the precedence level assigned to BLAND is never useful.
+> File "lib/parser.mly", line 20, characters 0-5:
+> Warning: the precedence level assigned to BLOR is never useful.
+> File "lib/parser.mly", line 1, characters 0-9:
+> Warning: the precedence level assigned to DELETE_NODES is never useful.
+> File "lib/parser.mly", line 2, characters 0-9:
+> Warning: the precedence level assigned to DELETE_RELS is never useful.
+> File "lib/parser.mly", line 24, characters 0-5:
+> Warning: the precedence level assigned to DIV is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to EQ is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to GE is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to GT is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to LE is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to LT is never useful.
+> File "lib/parser.mly", line 24, characters 0-5:
+> Warning: the precedence level assigned to MOD is never useful.
+> File "lib/parser.mly", line 24, characters 0-5:
+> Warning: the precedence level assigned to MUL is never useful.
+> File "lib/parser.mly", line 22, characters 0-5:
+> Warning: the precedence level assigned to NE is never useful.
+> File "lib/parser.mly", line 23, characters 0-5:
+> Warning: the precedence level assigned to SUB is never useful.
+> File "lib/parser.mly", line 58, characters 68-80:
+> Warning: this %prec declaration is never useful.
+> File "lib/parser.mly", line 59, characters 66-77:
+> Warning: this %prec declaration is never useful.
+> Warning: one state has shift/reduce conflicts.
+> Warning: one state has reduce/reduce conflicts.
+> File "<standard.mly>", line 143, characters 19-19:
+> File "<standard.mly>", line 143, characters 19-19:
+> Error: do not know how to resolve a reduce/reduce conflict
+> between the following two productions:
+> loption(separated_nonempty_list(COMMA,IDENTIFIER)) ->
+> loption(separated_nonempty_list(COMMA,rel_expr)) ->
+> Warning: 13 shift/reduce conflicts were arbitrarily resolved.
+> Warning: one reduce/reduce conflict was arbitrarily resolved.
+> File "<standard.mly>", line 143, characters 19-19:
+> Warning: production loption(separated_nonempty_list(COMMA,rel_expr)) -> is never reduced.
+> Warning: in total, 1 production is never reduced.
+[1]
