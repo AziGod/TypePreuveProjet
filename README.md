@@ -6,7 +6,7 @@ instructions sont typé correctement.
 
 
 opam install ocaml-lsp-server
-eval $(opam env)
+eval $(opam env)    
 
 opam install menhir
 opam install ppx_deriving
