@@ -1,0 +1,33 @@
+
+** Conflict (reduce/reduce) in state 54.
+** Token involved: RPAREN
+** This state is reached from main after reading:
+
+list(tpDecl) DELETE LPAREN STRINGCONSTANT COMMA STRINGCONSTANT COMMA STRINGCONSTANT
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+prog EOF 
+list(tpDecl) query 
+             list(clause) 
+             clause list(clause) 
+             DELETE delete_pattern 
+                    (?)
+
+** In state 54, looking ahead at RPAREN, reducing production
+** node_list -> STRINGCONSTANT
+** is permitted because of the following sub-derivation:
+
+LPAREN node_list RPAREN // lookahead token appears
+       STRINGCONSTANT COMMA node_list // lookahead token is inherited
+                            STRINGCONSTANT COMMA node_list // lookahead token is inherited
+                                                 STRINGCONSTANT . 
+
+** In state 54, looking ahead at RPAREN, reducing production
+** rel_list -> STRINGCONSTANT COMMA STRINGCONSTANT COMMA STRINGCONSTANT
+** is permitted because of the following sub-derivation:
+
+LPAREN rel_list RPAREN // lookahead token appears
+       STRINGCONSTANT COMMA STRINGCONSTANT COMMA STRINGCONSTANT . 

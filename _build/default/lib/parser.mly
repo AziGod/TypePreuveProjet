@@ -40,13 +40,27 @@ query: cls = list(clause) { Query cls }
 /* TODO: to be completed */
 clause: 
 | CREATE; pts = separated_list(COMMA, pattern) { Create pts }
-
+| MATCH; pts = separated_list(COMMA, pattern) { Match pts }
+| DELETE; dp = delete_pattern { Delete dp }
 
 /* TODO: to be completed */
 pattern: 
-| np = npattern { SimpPattern np }
+| np = node_pattern { SimpPattern np }
 
-npattern: 
+delete_pattern:
+| LPAREN; nl = node_list; RPAREN { DeleteNodes nl }
+| LPAREN; rl = rel_list; RPAREN { DeleteRels rl }
+
+node_list:
+| vn = STRINGCONSTANT { [vn] }
+| vn = STRINGCONSTANT; COMMA; nl = node_list { vn :: nl }
+
+rel_list:
+| vn1 = STRINGCONSTANT; COMMA; l = STRINGCONSTANT; COMMA; vn2 = STRINGCONSTANT { [(vn1, l, vn2)] }
+| vn1 = STRINGCONSTANT; COMMA; l = STRINGCONSTANT; COMMA; vn2 = STRINGCONSTANT; COMMA; rl = rel_list { (vn1, l, vn2):: rl }
+
+
+node_pattern: 
 | LPAREN; v = IDENTIFIER; COLON; t = IDENTIFIER; RPAREN { DeclPattern(v, t) }
 | LPAREN; v = IDENTIFIER; RPAREN { VarRefPattern(v) }
 

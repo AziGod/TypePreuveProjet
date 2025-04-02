@@ -5,12 +5,12 @@ nous devons complété la fonction 'tc_instr' qui vérifie que les
 instructions sont typé correctement.
 
 
-opam install ocaml-lsp-server
+opam install ocaml-lsp-server -y
 eval $(opam env)    
 
-opam install menhir
-opam install ppx_deriving
-opam install ocamlgraph
+opam install menhir -y
+opam install ppx_deriving -y
+opam install ocamlgraph -y
 eval $(opam env)
 
 
