@@ -63,3 +63,8 @@ ou relations avec d’autres noeuds)
 
 truc qu'on a fait le 24/03 :
 - compléter le typing.ml --> tc_instr et check_graph_types (tester sur utop)
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+fichier .mly = analyseur syntaxique (parser) = Menhir
+fichier .mll = analyseur lexical (lexer) = ocamllex
