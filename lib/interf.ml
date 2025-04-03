@@ -51,7 +51,8 @@ let run_interactive () =
   while true do
     Printf.printf ">> %!";
     let e = run_parser_error_reporting None in
-    Printf.printf "%s\n" (Lang.show_prog e)
+    (*Printf.printf "%s\n" (Lang.show_prog e);*)
+    Printf.printf "%s\n" (Instr.show_norm_prog (Instr.normalize_prog e))
   done
 
 (* Run the file with name fn (a string),

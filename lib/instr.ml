@@ -30,12 +30,33 @@ let normalize_node_pattern act = function
 
 let rec normalize_pattern act = function 
 | SimpPattern p -> normalize_node_pattern act p
-| CompPattern (npt, rl, pt) -> failwith "not yet implemented"
-
+| CompPattern (npt, rl, pt) -> 
+  let (v1, instr1) = normalize_node_pattern act npt in
+  let (v2, instr2) = normalize_pattern act pt in
+  match instr2 with
+  | firstInstr::instr2 -> ( 
+    match firstInstr with
+    | IActOnNode _ -> (v2, instr1 @ firstInstr :: [IActOnRel(act, v1, rl, v2)] @ instr2 )
+    | IActOnRel _ -> (v2, instr1 @ [IActOnRel(act, v1, rl, v2)] @ firstInstr::instr2 )
+    | _ -> failwith("instruction inattendue")
+    )
+  | [] -> (v2, instr1 @ [IActOnRel(act, v1, rl, v2)])
+  
 let normalize_clause = function
-  | Create pats -> 
-    List.concat_map (fun  p -> snd (normalize_pattern CreateAct p)) pats
-  | _ -> []
+| Create pats ->
+  List.concat_map (fun p -> snd (normalize_pattern CreateAct p)) pats
+| Match pats ->
+  List.concat_map (fun p -> snd (normalize_pattern MatchAct p)) pats
+| Delete (DeleteNodes vns) ->
+  List.map (fun vn -> IDeleteNode vn) vns
+| Delete (DeleteRels rels) ->
+  List.map (fun (v1, l, v2) -> IDeleteRel (v1, l, v2)) rels
+| Return vns ->
+  [IReturn vns]
+| Where e ->
+  [IWhere e]
+| Set sets ->
+  List.map (fun (vn, fn, e) -> ISet (vn, fn, e)) sets
 
 let normalize_query (Query cls) = NormQuery (List.concat_map normalize_clause cls)
 

@@ -1,0 +1,33 @@
+
+** Conflict (shift/reduce) in state 61.
+** Tokens involved: SUB NE MUL MOD LT LE GT GE EQ DIV BLOR BLAND ADD
+** The following explanations concentrate on token SUB.
+** This state is reached from main after reading:
+
+list(tpDecl) WHERE expr binop expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+prog EOF 
+list(tpDecl) query 
+             list(clause) 
+             clause list(clause) 
+             WHERE expr 
+                   (?)
+
+** In state 61, looking ahead at SUB, shifting is permitted
+** because of the following sub-derivation:
+
+expr binop expr 
+           expr binop expr 
+                barith 
+                . SUB 
+
+** In state 61, looking ahead at SUB, reducing production
+** expr -> expr binop expr
+** is permitted because of the following sub-derivation:
+
+expr binop expr // lookahead token appears because binop can begin with SUB
+expr binop expr . 

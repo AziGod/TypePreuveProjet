@@ -1,0 +1,136 @@
+# dune exec Proj_GraphDB i
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /home/thibault/.cache/dune/db
+# Workspace root: /root/Documents/TypePreuveProjet
+# Auto-detected concurrency: 12
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /root/.opam/4.14.0/bin/ocamlc.opt -config > /tmp/dune_556f2b_output
+$ (cd _build/.sandbox/56db23e3b00a95d29c2bc174ba844537/default && .ppx/0bb5094b13567c3c4e1ee33245b80e63/ppx.exe --cookie 'library-name="Proj_GraphDB"' -o lib/instr.pp.ml --impl lib/instr.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamldep.opt -modules -impl lib/instr.pp.ml) > _build/default/lib/.Proj_GraphDB.objs/proj_GraphDB__Instr.impl.d
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -bin-annot -I lib/.Proj_GraphDB.objs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/byte/proj_GraphDB__Instr.cmo -c -impl lib/instr.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -bin-annot -I lib/.Proj_GraphDB.objs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/byte/proj_GraphDB__Typing.cmo -c -impl lib/typing.pp.ml)
+> File "lib/typing.ml", line 27, characters 28-37:
+> 27 | let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
+>                                  ^^^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable list_node.
+> File "lib/typing.ml", line 27, characters 39-46:
+> 27 | let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
+>                                             ^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable rtdecls.
+> File "lib/typing.ml", line 32, characters 8-9:
+> 32 |   Const v -> IntT
+>              ^
+> Warning 27 [unused-var-strict]: unused variable v.
+> File "lib/typing.ml", line 33, characters 13-15:
+> 33 | | AttribAcc (vn, fn) -> IntT
+>                   ^^
+> Warning 27 [unused-var-strict]: unused variable vn.
+> File "lib/typing.ml", line 33, characters 17-19:
+> 33 | | AttribAcc (vn, fn) -> IntT
+>                       ^^
+> Warning 27 [unused-var-strict]: unused variable fn.
+> File "lib/typing.ml", line 34, characters 9-12:
+> 34 | | BinOp (bop, e1, e2) -> tp_expr env e1
+>               ^^^
+> Warning 27 [unused-var-strict]: unused variable bop.
+> File "lib/typing.ml", line 34, characters 18-20:
+> 34 | | BinOp (bop, e1, e2) -> tp_expr env e1
+>                        ^^
+> Warning 27 [unused-var-strict]: unused variable e2.
+> File "lib/typing.ml", line 122, characters 10-12:
+> 122 |   | ISet (vn, fn, expr) ->
+>                 ^^
+> Warning 27 [unused-var-strict]: unused variable vn.
+> File "lib/typing.ml", line 122, characters 14-16:
+> 122 |   | ISet (vn, fn, expr) ->
+>                     ^^
+> Warning 27 [unused-var-strict]: unused variable fn.
+> File "lib/typing.ml", line 122, characters 18-22:
+> 122 |   | ISet (vn, fn, expr) ->
+>                         ^^^^
+> Warning 27 [unused-var-strict]: unused variable expr.
+> File "lib/typing.ml", line 150, characters 27-35:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                  ^^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable continue.
+> File "lib/typing.ml", line 150, characters 36-38:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                           ^^
+> Warning 27 [unused-var-strict]: unused variable gt.
+> File "lib/typing.ml", line 150, characters 39-45:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                              ^^^^^^
+> Warning 27 [unused-var-strict]: unused variable instrs.
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -bin-annot -I lib/.Proj_GraphDB.objs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/byte/proj_GraphDB__Sem.cmo -c -impl lib/sem.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -bin-annot -I lib/.Proj_GraphDB.objs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/byte/proj_GraphDB__Display.cmo -c -impl lib/display.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -bin-annot -I lib/.Proj_GraphDB.objs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/byte/proj_GraphDB__Interf.cmo -c -impl lib/interf.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32 -g -bin-annot -I bin/.main.eobjs/byte -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -I lib/.Proj_GraphDB.objs/byte -no-alias-deps -opaque -o bin/.main.eobjs/byte/dune__exe__Main.cmi -c -intf bin/main.mli)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -intf-suffix .ml -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/native/proj_GraphDB__Typing.cmx -c -impl lib/typing.pp.ml)
+> File "lib/typing.ml", line 27, characters 28-37:
+> 27 | let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
+>                                  ^^^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable list_node.
+> File "lib/typing.ml", line 27, characters 39-46:
+> 27 | let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
+>                                             ^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable rtdecls.
+> File "lib/typing.ml", line 32, characters 8-9:
+> 32 |   Const v -> IntT
+>              ^
+> Warning 27 [unused-var-strict]: unused variable v.
+> File "lib/typing.ml", line 33, characters 13-15:
+> 33 | | AttribAcc (vn, fn) -> IntT
+>                   ^^
+> Warning 27 [unused-var-strict]: unused variable vn.
+> File "lib/typing.ml", line 33, characters 17-19:
+> 33 | | AttribAcc (vn, fn) -> IntT
+>                       ^^
+> Warning 27 [unused-var-strict]: unused variable fn.
+> File "lib/typing.ml", line 34, characters 9-12:
+> 34 | | BinOp (bop, e1, e2) -> tp_expr env e1
+>               ^^^
+> Warning 27 [unused-var-strict]: unused variable bop.
+> File "lib/typing.ml", line 34, characters 18-20:
+> 34 | | BinOp (bop, e1, e2) -> tp_expr env e1
+>                        ^^
+> Warning 27 [unused-var-strict]: unused variable e2.
+> File "lib/typing.ml", line 122, characters 10-12:
+> 122 |   | ISet (vn, fn, expr) ->
+>                 ^^
+> Warning 27 [unused-var-strict]: unused variable vn.
+> File "lib/typing.ml", line 122, characters 14-16:
+> 122 |   | ISet (vn, fn, expr) ->
+>                     ^^
+> Warning 27 [unused-var-strict]: unused variable fn.
+> File "lib/typing.ml", line 122, characters 18-22:
+> 122 |   | ISet (vn, fn, expr) ->
+>                         ^^^^
+> Warning 27 [unused-var-strict]: unused variable expr.
+> File "lib/typing.ml", line 150, characters 27-35:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                  ^^^^^^^^
+> Warning 27 [unused-var-strict]: unused variable continue.
+> File "lib/typing.ml", line 150, characters 36-38:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                           ^^
+> Warning 27 [unused-var-strict]: unused variable gt.
+> File "lib/typing.ml", line 150, characters 39-45:
+> 150 | let typecheck_instructions continue gt instrs np = 
+>                                              ^^^^^^
+> Warning 27 [unused-var-strict]: unused variable instrs.
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -intf-suffix .ml -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/native/proj_GraphDB__Instr.cmx -c -impl lib/instr.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -intf-suffix .ml -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/native/proj_GraphDB__Sem.cmx -c -impl lib/sem.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -intf-suffix .ml -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/native/proj_GraphDB__Display.cmx -c -impl lib/display.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -intf-suffix .ml -no-alias-deps -opaque -open Proj_GraphDB -o lib/.Proj_GraphDB.objs/native/proj_GraphDB__Interf.cmx -c -impl lib/interf.pp.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32 -g -I bin/.main.eobjs/byte -I bin/.main.eobjs/native -I /root/.opam/4.14.0/lib/ocamlgraph -I /root/.opam/4.14.0/lib/ppx_deriving -I /root/.opam/4.14.0/lib/ppx_deriving/runtime -I /root/.opam/4.14.0/lib/stdlib-shims -I lib/.Proj_GraphDB.objs/byte -I lib/.Proj_GraphDB.objs/native -intf-suffix .ml -no-alias-deps -opaque -o bin/.main.eobjs/native/dune__exe__Main.cmx -c -impl bin/main.ml)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32-39 -g -a -o lib/Proj_GraphDB.cmxa lib/.Proj_GraphDB.objs/native/proj_GraphDB.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Graphstruct.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Lang.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Instr.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Typing.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Sem.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Parser.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Lexer.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Display.cmx lib/.Proj_GraphDB.objs/native/proj_GraphDB__Interf.cmx)
+$ (cd _build/default && /root/.opam/4.14.0/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -8-27-32 -g -o bin/main.exe /root/.opam/4.14.0/lib/stdlib-shims/stdlib_shims.cmxa /root/.opam/4.14.0/lib/ocamlgraph/graph.cmxa /root/.opam/4.14.0/lib/ppx_deriving/runtime/ppx_deriving_runtime.cmxa lib/Proj_GraphDB.cmxa bin/.main.eobjs/native/dune__exe__Main.cmx)
