@@ -2,7 +2,8 @@
  (name Proj_GraphDB)
  (libraries 
   ocamlgraph
-  ppx_deriving)
+  ppx_deriving
+  )
  (preprocess (pps ppx_deriving.show))
 )
 

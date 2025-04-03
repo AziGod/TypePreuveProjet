@@ -1,7 +1,15 @@
 digraph G {
-  0 [label="0:A{}", shape=box, fontcolor="#FF0000", ];
-  1 [label="1:B{}", shape=box, fontcolor="#FF0000", ];
+  0 [label="0:P{age 37, nom \"Albert\"}", shape=box, fontcolor="#FF0000", ];
+  1 [label="1:P{age 24, nom \"Benoit\"}", shape=box, fontcolor="#FF0000", ];
+  2 [label="2:P{age 8, nom \"Corentin\"}", shape=box, fontcolor="#FF0000", ];
+  3 [label="3:E{pme false, nom \"Apple\"}", shape=box, fontcolor="#FF0000", ];
   
   
+  0 -> 1 [color="#0000FF", label="ami", ];
+  0 -> 3 [color="#0000FF", label="emp", ];
+  1 -> 2 [color="#0000FF", label="ami", ];
+  1 -> 3 [color="#0000FF", label="emp", ];
+  2 -> 0 [color="#0000FF", label="ami", ];
+  2 -> 3 [color="#0000FF", label="emp", ];
   
   }
