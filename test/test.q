@@ -3,22 +3,21 @@
 
 (:P) -[:ami]-> (:P)
 (:P) -[:emp]-> (:E)
+(:E) -[:f] -> (:E)
 
-create 
-    (a:P) -[:ami]-> (b:P) -[:ami]-> (c:P) -[:ami]-> (a), 
-    (a) -[:emp]-> (e:E),
-    (b) -[:emp]-> (e),
-    (c) -[:emp]-> (e)
+create
+   (marie: P) -[:emp]-> (ab: E),
+   (marie: P),
+   (pierre: P) -[:emp]-> (pp: E)
+set
+   marie.nom = "Marie Dubois",    marie.age = 25,
+   pierre.nom = "Pierre Dupont", pierre.age = 24,
+   ab.nom = "Airbus", ab.pme = false,
+   pp.nom = "Petit Pain", pp.pme = true
+create
+   (pp) -[:f]-> (ab),
+   (marie) -[:emp]-> (ab),
+   (pierre) -[:emp]-> (pp),
+   (marie) -[:ami]-> (pierre)
 
-set 
-    a.nom = "Albert", a.age = 47,
-    b.nom = "Benoit", b.age = 24,
-    c.nom = "Corentin", c.age = 8,
-    e.nom = "Apple", e.pme = false,
-    
-
-
-
-
-
-    
+match (p:P) -[:emp]-> (e:E)
