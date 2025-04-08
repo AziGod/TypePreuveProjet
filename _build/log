@@ -1,0 +1,16 @@
+# dune exec Proj_GraphDB f test/entreprise.q
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /home/thibault/.cache/dune/db
+# Workspace root: /root/Documents/TypePreuveProjet
+# Auto-detected concurrency: 12
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /root/.opam/4.14.0/bin/ocamlc.opt -config > /tmp/dune_29b973_output
