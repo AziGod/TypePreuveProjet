@@ -2,211 +2,145 @@ open Graphstruct
 open Lang
 open Instr
  
-type environment = { types:  db_tp; bindings: (vname * label) list }
+type environment = { types: db_tp; bindings: (vname * label) list }
+[@@deriving show]
 
-let initial_environment gt = {types = gt; bindings = []}
+let initial_environment gt = { types = gt; bindings = [] }
 let initial_result gt = Result.Ok (initial_environment gt)
   
 exception FieldAccError of string
 exception TypeError of string
-
+exception TypeCheckError of string list
 
 type tc_result = (environment, string list) result
 
 (* Functions for manipulating the environment *)
 
-let add_var vn t (env:environment) = 
-  {env with bindings = (vn,t)::env.bindings}
+let add_var vn t (env: environment) = 
+  { env with bindings = (vn, t) :: env.bindings }
 
 let remove_var vn env = 
-  {env with bindings = List.remove_assoc vn env.bindings}
+  { env with bindings = List.remove_assoc vn env.bindings }
 
-(* TODO: add more auxiliary functions here *)
+let check_graph_types (DBG (ntdecls, rtdecls)) : (unit, string) result =
+  let node_labels = List.map (fun (DBN (lbl, _)) -> lbl) ntdecls in
+  let unique_node_labels = List.sort_uniq String.compare node_labels in
+  let errors = ref [] in
+  
+  if List.length node_labels <> List.length unique_node_labels then
+    errors := "Multiple declarations of the same node type" :: !errors;
+  
+  let valid_node_labels = node_labels in
+  let check_relation (DBR (src, rlbl, tgt)) =
+    if not (List.mem src valid_node_labels) then
+      errors := ("Reference to undeclared node type '" ^ src ^ "' in relation '" ^ rlbl ^ "'") :: !errors;
+    if not (List.mem tgt valid_node_labels) then
+      errors := ("Reference to undeclared node type '" ^ tgt ^ "' in relation '" ^ rlbl ^ "'") :: !errors
+  in
+  List.iter check_relation rtdecls;
+  
+  let relation_triples = List.map (fun (DBR (s, r, t)) -> (s, r, t)) rtdecls in
+  let unique_relation_triples = List.sort_uniq (fun (s1, r1, t1) (s2, r2, t2) ->
+    let c1 = String.compare s1 s2 in
+    if c1 <> 0 then c1
+    else let c2 = String.compare r1 r2 in
+    if c2 <> 0 then c2
+    else String.compare t1 t2
+  ) relation_triples in
+  if List.length relation_triples <> List.length unique_relation_triples then
+    errors := "Multiple declarations of the same relation type" :: !errors;
+  
+  if !errors = [] then Result.Ok () else Result.Error (String.concat "\n" (List.rev !errors))
 
-(* TODO: fill in details *)
-let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
-
-
-(* TODO: fill in details *)
 let rec tp_expr env = function
-  Const v -> IntT
-| AttribAcc (vn, fn) -> IntT
-| BinOp (bop, e1, e2) -> tp_expr env e1
+  | Const v -> (
+      match v with
+      | BoolV _ -> BoolT
+      | IntV _ -> IntT
+      | StringV _ -> StringT)
+  | AttribAcc (vn, fn) -> (
+      match List.assoc_opt vn env.bindings with
+      | Some lbl ->
+          let attribs = List.assoc lbl (List.map (fun (DBN (l, a)) -> (l, a)) (nodes_of_graph env.types)) in
+          List.assoc fn attribs
+      | None -> raise (TypeError ("Variable '" ^ vn ^ "' not bound")))
+  | BinOp (bop, e1, e2) ->
+      let t1 = tp_expr env e1 in
+      let t2 = tp_expr env e2 in
+      match bop with
+      | BArith _ -> if t1 = IntT && t2 = IntT then IntT else raise (TypeError "Arithmetic operation requires int types")
+      | BCompar _ -> if t1 = t2 then BoolT else raise (TypeError "Comparison requires same types")
+      | BLogic _ -> if t1 = BoolT && t2 = BoolT then BoolT else raise (TypeError "Logic operation requires bool types")
 
-(* check expression e with expected type et in environment env *)
 let check_expr e et env : tc_result = 
   try 
-    if tp_expr env e = et
-    then Result.Ok env
+    if tp_expr env e = et then Result.Ok env
     else Result.Error ["Expression does not have expected type " ^ (show_attrib_tp et)]
   with 
   | TypeError s -> Result.Error [s]
   | FieldAccError s -> Result.Error [s]
-  
 
+  let tc_instr (i: instruction) (env: environment) : environment =
+    let node_exists lbl = 
+      List.exists (fun (DBN (l, _)) -> l = lbl) (nodes_of_graph env.types)
+    in
+    let rel_exists src rlbl tgt =
+      List.exists (fun (DBR (s, r, t)) -> s = src && r = rlbl && t = tgt) (rels_of_graph env.types)
+    in
+    match i with
+    | IActOnNode (_, vn, lb) ->
+        if not (node_exists lb) then
+          raise (TypeCheckError ["Node type '" ^ lb ^ "' is not declared"])
+        else
+          add_var vn lb env  (* Permet la réutilisation de variables *)
+    | IActOnRel (act, vn1, rlbl, vn2) ->
+        let lbl1 = try List.assoc vn1 env.bindings with Not_found -> raise (TypeCheckError ["Variable '" ^ vn1 ^ "' is not bound"]) in
+        let lbl2 = try List.assoc vn2 env.bindings with Not_found -> raise (TypeCheckError ["Variable '" ^ vn2 ^ "' is not bound"]) in
+        if not (rel_exists lbl1 rlbl lbl2) then
+          raise (TypeCheckError ["Relation '" ^ rlbl ^ "' from '" ^ lbl1 ^ "' to '" ^ lbl2 ^ "' is not declared"])
+        else
+          env
+    | IDeleteNode vn ->
+        if not (List.mem_assoc vn env.bindings) then
+          raise (TypeCheckError ["Variable '" ^ vn ^ "' is not bound"])
+        else
+          remove_var vn env
+    | IDeleteRel (vn1, rlbl, vn2) ->
+        let lbl1 = try List.assoc vn1 env.bindings with Not_found -> raise (TypeCheckError ["Variable '" ^ vn1 ^ "' is not bound"]) in
+        let lbl2 = try List.assoc vn2 env.bindings with Not_found -> raise (TypeCheckError ["Variable '" ^ vn2 ^ "' is not bound"]) in
+        if not (rel_exists lbl1 rlbl lbl2) then
+          raise (TypeCheckError ["Relation '" ^ rlbl ^ "' from '" ^ lbl1 ^ "' to '" ^ lbl2 ^ "' is not declared"])
+        else
+          env
+    | IReturn vns ->
+        let unbound = List.filter (fun vn -> not (List.mem_assoc vn env.bindings)) vns in
+        if unbound <> [] then
+          raise (TypeCheckError (List.map (fun vn -> "Variable '" ^ vn ^ "' is not bound") unbound))
+        else if List.length vns <> List.length (List.sort_uniq String.compare vns) then
+          raise (TypeCheckError ["Return contains duplicate variables"])
+        else
+          { env with bindings = List.filter (fun (vn, _) -> List.mem vn vns) env.bindings }
+    | IWhere e ->
+        let et = BoolT in
+        (match check_expr e et env with
+         | Result.Ok _ -> env
+         | Result.Error errs -> raise (TypeCheckError errs))
+    | ISet (vn, fn, e) ->
+        let lbl = try List.assoc vn env.bindings with Not_found -> raise (TypeCheckError ["Variable '" ^ vn ^ "' is not bound"]) in
+        let attribs = try List.assoc lbl (nodes_of_graph env.types |> List.map (fun (DBN (l, a)) -> (l, a)))
+                      with Not_found -> [] in
+        let expected_type = try List.assoc fn attribs with Not_found -> raise (TypeCheckError ["Attribute '" ^ fn ^ "' not declared for node type '" ^ lbl ^ "'"]) in
+        (match check_expr e expected_type env with
+         | Result.Ok _ -> env
+         | Result.Error errs -> raise (TypeCheckError errs))
 
+let tc_instrs_stop instrs env =
+  List.fold_left (fun env i -> tc_instr i env) env instrs
 
-
-
-(* Fonctions utilisées dans tc_instr *)
-(* Vérifie si un label est déclaré dans l'environnement *)
-let verif_label_declared (lb: label) (env: environment) : bool =
-  match env.types with
-  | DBG (list_node, _) -> 
-      List.exists (fun (DBN(n, _)) -> n = lb) list_node
-
-(* Vérifie si une variable est déclarée dans l'environnement *)
-let verif_declared_var (vn: vname) (env: environment) : bool =
-  List.exists (fun (declared_vn, _) -> declared_vn = vn) env.bindings
-
-(* Ajoute une variable avec son label dans l'environnement *)
-let add_var_to_env (vn: vname) (lb: label) (env: environment) : environment =
-  { env with bindings = (vn, lb) :: env.bindings }
-
-(* Supprime une variable de l'environnement *)
-let remove_var_from_env (vn: vname) (env: environment) : environment =
-  { env with bindings = List.remove_assoc vn env.bindings }
-
-(* Filtre l'environnement pour ne garder que les variables spécifiées dans la liste vn_list *)
-let filter_env_with_vars (vn_list: vname list) (env: environment) : environment =
-  let filtered_bindings = List.filter (fun (vn, _) -> List.mem vn vn_list) env.bindings in
-  { env with bindings = filtered_bindings }
-
-
-
-
-let tc_instr (i: instruction) (env: environment) : tc_result = 
-  match i with
-  | IActOnNode (_, vn, lb) ->
-    if not (verif_label_declared lb env) then 
-      Result.Error ["label non déclaré"]
-    else if verif_declared_var vn env then 
-      Result.Error ["variable déjà déclarée"]
-    else 
-      Result.Ok (add_var_to_env vn lb env)
-
-
-  | IActOnRel (_, vn, lb, v2) ->
-    if not (verif_label_declared lb env) then 
-      Result.Error ["label non déclaré"]
-    else if not (verif_declared_var vn env) then 
-      Result.Error ["première variable non déclarée"]
-    else if not (verif_declared_var v2 env) then 
-      Result.Error ["deuxième variable non déclarée"]
-    else 
-      Result.Ok env  (* L’environnement reste inchangé *)
-
-
-  | IDeleteNode vn ->
-    if not (verif_declared_var vn env) then 
-      Result.Error ["variable non déclarée"]
-    else 
-      Result.Ok (remove_var_from_env vn env)  (* Supprime la variable de l’environnement *)
-    
-
-  | IReturn vn_list ->
-    if not (List.for_all (fun vn -> verif_declared_var vn env) vn_list) then 
-      Result.Error ["une ou plusieurs variables retournées ne sont pas déclarées"]
-    else 
-      Result.Ok (filter_env_with_vars vn_list env)  (* Ne garde que les variables retournées *)
-    
-
-  | IWhere expr ->
-    let expr_type = tp_expr env expr in
-    if expr_type <> BoolT then 
-      Result.Error ["l'expression WHERE doit être de type booléen"]
-    else 
-      Result.Ok env  (* L’environnement ne change pas *)
-
-
-  | ISet (vn, fn, expr) ->
-    (* Il faut vérifier que lors d’une affectation de la forme marie.age = 25, l’expression affectée
-    est bien typée et correspond au type de l’attribut. L’environnement ne change pas *)
-    Result.Error [""]
-
-
-    
-  | _  -> Result.Error ["instruction non implémentée"]
-
-
-
-
-  
-
-
-
-
-
-  
-
-(* type check list of instructions and stop on error *)
-let check_and_stop (res : tc_result) i : tc_result = Result.bind res (tc_instr i)
-
-let tc_instrs_stop gt instrs : tc_result = 
-  List.fold_left check_and_stop (initial_result gt) instrs
-
-
-  (* TODO: typecheck instructions *)
-let typecheck_instructions continue gt instrs np = 
-  let r = Result.Ok initial_environment in   (* call to real typechecker here *)
-  match r with
-  | Result.Error etc -> Printf.printf "%s\n" (String.concat "\n" etc); 
-                        failwith "stopped"
-  |_ -> np
-  
-
-  (* Typecheck program; 
-     If continue is true, continue typechecking even 
-     when errors have been discovered (can be ignored in a first version) *)  
-let typecheck continue (NormProg(gt, NormQuery instrs) as np) = 
+let typecheck _continue (NormProg (gt, NormQuery instrs) as np) : Instr.norm_prog =
   match check_graph_types gt with
-  | Result.Error egt -> Printf.printf "%s\n" ("Undeclared types in\n" ^ egt);
-                        failwith "stopped"
-  | _ -> typecheck_instructions continue gt instrs np
-  
-
-
-
-
-
-(* Vérifie que les types sont uniques et que les labels dans les relations sont déclarés dans les noeuds *)
-let check_graph_types (DBG (list_node, list_rel)) =
-  (* Fonction auxiliaire pour vérifier l'unicité des types *)
-  let rec no_duplicates = function
-    | [] -> true
-    | (x :: xs) -> not (List.mem x xs) && (no_duplicates xs)
-  in
-  (* Vérifie que les types sont uniques *)
-  let types_unique list_node =
-    no_duplicates (List.map (fun (DBN(n, _)) -> n) list_node)
-  in
-  (* Vérifie que tous les labels des relations sont déclarés dans les noeuds *)
-  let labels_declared_in_relations list_node list_rel =
-    let declared_labels = List.map (fun (DBN(n, _)) -> n) list_node in
-    List.for_all (fun (DBR(n1, _, n2)) -> List.mem n1 declared_labels && List.mem n2 declared_labels) list_rel
-  in
-  (* Vérification des doublons et des labels dans les relations *)
-  if types_unique list_node && labels_declared_in_relations list_node list_rel then
-    Result.Ok ()  (* Aucun problème détecté *)
-  else
-    Result.Error "Types sont dupliqués ou relation fait référence à un label non déclaré"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  | Result.Error egt -> raise (TypeCheckError ["Undeclared types in graph:\n" ^ egt])
+  | Result.Ok () ->
+      let env = initial_environment gt in
+      let _ = tc_instrs_stop instrs env in
+      np
