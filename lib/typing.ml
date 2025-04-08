@@ -10,30 +10,62 @@ let initial_result gt = Result.Ok (initial_environment gt)
 exception FieldAccError of string
 exception TypeError of string
 
-
+(* Résultat d’un typage avec possibilité d’erreurs sous forme de string list *)
 type tc_result = (environment, string list) result
 
-(* Functions for manipulating the environment *)
 
-let add_var vn t (env:environment) = 
-  {env with bindings = (vn,t)::env.bindings}
+(* Typage d’une expression *)
+let rec tp_expr (env: environment) = function
+  | Const (VInt _) -> IntT
+  | Const (VBool _) -> BoolT
 
-let remove_var vn env = 
-  {env with bindings = List.remove_assoc vn env.bindings}
+  | Var vn -> (* Accès à une variable *)
+      (match List.assoc_opt vn env.bindings with
+      | Some _ -> LabelT  (* Une variable liée à un nœud ou relation est typée LabelT *)
+      | None -> raise (TypeError ("Variable " ^ vn ^ " non déclarée"))
+      )
 
-(* TODO: add more auxiliary functions here *)
+  | AttribAcc (vn, fn) -> (* Accès à un attribut d’un nœud via une variable *)
+      (match List.assoc_opt vn env.bindings with
+      | None -> raise (FieldAccError ("Variable " ^ vn ^ " non déclarée"))
+      | Some lb -> 
+          (* On va chercher le type de l’attribut fn dans les nœuds *)
+          let rec find_label l = function
+            | [] -> None
+            | DBN(n, atlist)::rest when n = l -> List.assoc_opt fn atlist
+            | _::rest -> find_label l rest
+          in
+          (match env.types with
+          | DBG (list_node, _) ->
+              (match find_label lb list_node with
+              | Some t -> t
+              | None -> raise (FieldAccError ("Attribut " ^ fn ^ " non trouvé pour le label " ^ lb))
+              )
+          )
+      )
 
-(* TODO: fill in details *)
-let check_graph_types (DBG (list_node, rtdecls)) = Result.Ok ()
+  | BinOp (bop, e1, e2) ->
+      let t1 = tp_expr env e1 in
+      let t2 = tp_expr env e2 in
+      (match bop with
+      | Add | Sub | Mul | Div ->
+          if t1 = IntT && t2 = IntT then IntT
+          else raise (TypeError "Opération arithmétique sur des types non entiers")
+      | Eq | Neq | Lt | Le | Gt | Ge ->
+          if t1 = t2 then BoolT
+          else raise (TypeError "Comparaison entre types différents")
+      | And | Or ->
+          if t1 = BoolT && t2 = BoolT then BoolT
+          else raise (TypeError "Opération logique sur des types non booléens")
+      )
 
+  | Not e ->
+      let t = tp_expr env e in
+      if t = BoolT then BoolT
+      else raise (TypeError "Opérateur Not sur un type non booléen")
 
-(* TODO: fill in details *)
-let rec tp_expr env = function
-  Const v -> IntT
-| AttribAcc (vn, fn) -> IntT
-| BinOp (bop, e1, e2) -> tp_expr env e1
-
-(* check expression e with expected type et in environment env *)
+ 
+(* Vérifie qu’une expression a bien un type attendu *)
 let check_expr e et env : tc_result = 
   try 
     if tp_expr env e = et
@@ -74,7 +106,7 @@ let filter_env_with_vars (vn_list: vname list) (env: environment) : environment 
 
 
 
-
+(* Vérifie une instruction *)
 let tc_instr (i: instruction) (env: environment) : tc_result = 
   match i with
   | IActOnNode (_, vn, lb) ->
@@ -120,12 +152,41 @@ let tc_instr (i: instruction) (env: environment) : tc_result =
 
 
   | ISet (vn, fn, expr) ->
-    (* Il faut vérifier que lors d’une affectation de la forme marie.age = 25, l’expression affectée
-    est bien typée et correspond au type de l’attribut. L’environnement ne change pas *)
-    Result.Error [""]
-
-
-    
+      (* Vérifie que la variable est déclarée *)
+      (match List.assoc_opt vn env.bindings with
+      | None -> Result.Error ["variable non déclarée"]
+      | Some lb ->
+          (* On cherche le type du label dans la DB *)
+          let rec find_label l = function
+            | [] -> None
+            | DBN (n, atlist) :: rest -> if n = l then Some atlist else find_label l rest
+          in
+          (match env.types with
+          | DBG (list_node, _) ->
+              (match find_label lb list_node with
+              | None -> Result.Error ["label non trouvé dans la DB"]
+              | Some atlist ->
+                  (* On cherche le type de l’attribut *)
+                  (match List.assoc_opt fn atlist with
+                  | None -> Result.Error ["attribut non trouvé dans le label"]
+                  | Some expected_tp ->
+                      (* On vérifie le type de l'expression *)
+                      try
+                        let actual_tp = tp_expr env expr in
+                        if actual_tp = expected_tp then
+                          Result.Ok env  (* l'environnement ne change pas *)
+                        else
+                          Result.Error [
+                            "mauvais type pour l'expression affectée : attendu " ^
+                            (show_attrib_tp expected_tp) ^ " mais obtenu " ^ (show_attrib_tp actual_tp)
+                          ]
+                      with
+                      | TypeError s -> Result.Error [s]
+                      | FieldAccError s -> Result.Error [s]
+                  )
+              )
+          )
+      )
   | _  -> Result.Error ["instruction non implémentée"]
 
 
@@ -139,25 +200,23 @@ let tc_instr (i: instruction) (env: environment) : tc_result =
 
   
 
-(* type check list of instructions and stop on error *)
+(* Applique une vérification à une liste d'instructions avec arrêt immédiat en cas d’erreur *)
 let check_and_stop (res : tc_result) i : tc_result = Result.bind res (tc_instr i)
 
 let tc_instrs_stop gt instrs : tc_result = 
   List.fold_left check_and_stop (initial_result gt) instrs
 
-
-  (* TODO: typecheck instructions *)
+(* Point d’entrée du typage complet *)
 let typecheck_instructions continue gt instrs np = 
-  let r = Result.Ok initial_environment in   (* call to real typechecker here *)
+  let r = tc_instrs_stop gt instrs in
   match r with
   | Result.Error etc -> Printf.printf "%s\n" (String.concat "\n" etc); 
                         failwith "stopped"
-  |_ -> np
+  | _ -> np
+  
   
 
-  (* Typecheck program; 
-     If continue is true, continue typechecking even 
-     when errors have been discovered (can be ignored in a first version) *)  
+(* Fonction principale pour vérifier un programme *)
 let typecheck continue (NormProg(gt, NormQuery instrs) as np) = 
   match check_graph_types gt with
   | Result.Error egt -> Printf.printf "%s\n" ("Undeclared types in\n" ^ egt);
@@ -169,7 +228,7 @@ let typecheck continue (NormProg(gt, NormQuery instrs) as np) =
 
 
 
-(* Vérifie que les types sont uniques et que les labels dans les relations sont déclarés dans les noeuds *)
+(* Vérifie que les types dans le graphe sont bien formés *)
 let check_graph_types (DBG (list_node, list_rel)) =
   (* Fonction auxiliaire pour vérifier l'unicité des types *)
   let rec no_duplicates = function
