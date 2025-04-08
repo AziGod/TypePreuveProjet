@@ -5,4 +5,3 @@ proj_GraphDB__Lang
 proj_GraphDB__Lexer
 proj_GraphDB__Parser
 proj_GraphDB__Sem
-proj_GraphDB__Typing
