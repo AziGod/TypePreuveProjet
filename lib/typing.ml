@@ -14,16 +14,13 @@ exception TypeError of string
 type tc_result = (environment, string list) result
 
 
-(* Typage d’une expression *)
-let rec tp_expr (env: environment) = function
-  | Const (VInt _) -> IntT
-  | Const (VBool _) -> BoolT
 
-  | Var vn -> (* Accès à une variable *)
-      (match List.assoc_opt vn env.bindings with
-      | Some _ -> LabelT  (* Une variable liée à un nœud ou relation est typée LabelT *)
-      | None -> raise (TypeError ("Variable " ^ vn ^ " non déclarée"))
-      )
+(* Typage des expressions *)
+let rec tp_expr (env: environment) = function
+  | Const (IntV _) -> IntT
+  | Const (BoolV _) -> BoolT
+  | Const (StringV _) -> StringT
+
 
   | AttribAcc (vn, fn) -> (* Accès à un attribut d’un nœud via une variable *)
       (match List.assoc_opt vn env.bindings with
@@ -44,25 +41,31 @@ let rec tp_expr (env: environment) = function
           )
       )
 
-  | BinOp (bop, e1, e2) ->
-      let t1 = tp_expr env e1 in
-      let t2 = tp_expr env e2 in
-      (match bop with
-      | Add | Sub | Mul | Div ->
-          if t1 = IntT && t2 = IntT then IntT
-          else raise (TypeError "Opération arithmétique sur des types non entiers")
-      | Eq | Neq | Lt | Le | Gt | Ge ->
-          if t1 = t2 then BoolT
-          else raise (TypeError "Comparaison entre types différents")
-      | And | Or ->
-          if t1 = BoolT && t2 = BoolT then BoolT
-          else raise (TypeError "Opération logique sur des types non booléens")
-      )
-
-  | Not e ->
-      let t = tp_expr env e in
-      if t = BoolT then BoolT
-      else raise (TypeError "Opérateur Not sur un type non booléen")
+      | BinOp (bop, e1, e2) ->
+        let t1 = tp_expr env e1 in
+        let t2 = tp_expr env e2 in
+        (match bop with
+        | BArith bop' -> (* Cas pour les opérations arithmétiques *)
+            (match bop' with
+            | BAadd | BAsub | BAmul | BAdiv | BAmod ->
+                if t1 = IntT && t2 = IntT then IntT
+                else raise (TypeError "Opération arithmétique sur des types non entiers")
+            )
+        
+        | BCompar bop' -> (* Cas pour les comparaisons *)
+            (match bop' with
+            | BCeq | BCge | BCgt | BCle | BClt | BCne ->
+                if t1 = t2 then BoolT
+                else raise (TypeError "Comparaison entre types différents")
+            )
+        
+        | BLogic bop' -> (* Cas pour les opérations logiques *)
+            (match bop' with
+            | BLand | BLor ->
+                if t1 = BoolT && t2 = BoolT then BoolT
+                else raise (TypeError "Opération logique sur des types non booléens")
+            )
+        )
 
  
 (* Vérifie qu’une expression a bien un type attendu *)
@@ -111,27 +114,27 @@ let tc_instr (i: instruction) (env: environment) : tc_result =
   match i with
   | IActOnNode (_, vn, lb) ->
     if not (verif_label_declared lb env) then 
-      Result.Error ["label non déclaré"]
+      Result.Error ["label non déclaré: " ^ (lb)]
     else if verif_declared_var vn env then 
-      Result.Error ["variable déjà déclarée"]
+      Result.Error ["variable déjà déclarée: " ^ (vn)]
     else 
       Result.Ok (add_var_to_env vn lb env)
 
 
   | IActOnRel (_, vn, lb, v2) ->
     if not (verif_label_declared lb env) then 
-      Result.Error ["label non déclaré"]
+      Result.Error ["label non déclaré: " ^ (lb)]
     else if not (verif_declared_var vn env) then 
-      Result.Error ["première variable non déclarée"]
+      Result.Error ["première variable non déclarée: " ^ (vn)]
     else if not (verif_declared_var v2 env) then 
-      Result.Error ["deuxième variable non déclarée"]
+      Result.Error ["deuxième variable non déclarée: " ^ (v2)]
     else 
       Result.Ok env  (* L’environnement reste inchangé *)
 
 
   | IDeleteNode vn ->
     if not (verif_declared_var vn env) then 
-      Result.Error ["variable non déclarée"]
+      Result.Error ["variable non déclarée: " ^ (vn)]
     else 
       Result.Ok (remove_var_from_env vn env)  (* Supprime la variable de l’environnement *)
     
@@ -216,17 +219,6 @@ let typecheck_instructions continue gt instrs np =
   
   
 
-(* Fonction principale pour vérifier un programme *)
-let typecheck continue (NormProg(gt, NormQuery instrs) as np) = 
-  match check_graph_types gt with
-  | Result.Error egt -> Printf.printf "%s\n" ("Undeclared types in\n" ^ egt);
-                        failwith "stopped"
-  | _ -> typecheck_instructions continue gt instrs np
-  
-
-
-
-
 
 (* Vérifie que les types dans le graphe sont bien formés *)
 let check_graph_types (DBG (list_node, list_rel)) =
@@ -250,6 +242,20 @@ let check_graph_types (DBG (list_node, list_rel)) =
   else
     Result.Error "Types sont dupliqués ou relation fait référence à un label non déclaré"
 
+
+
+
+
+
+
+
+(* Fonction principale pour vérifier un programme *)
+let typecheck continue (NormProg(gt, NormQuery instrs) as np) = 
+  match check_graph_types gt with
+  | Result.Error egt -> Printf.printf "%s\n" ("Undeclared types in\n" ^ egt);
+                        failwith "stopped"
+  | _ -> typecheck_instructions continue gt instrs np
+  
 
 
 
