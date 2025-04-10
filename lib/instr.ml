@@ -1,10 +1,12 @@
-(* Normalized language, after removal of patterns and other syntactic sugar *)
+(* Types normalisés après suppression des patterns complexes *)
 
 open Lang
 
 type action = CreateAct | MatchAct
   [@@deriving show]
 
+
+(* Représente les instructions d'une requête *)
 type instruction
   = IActOnNode of action * vname * label
   | IActOnRel of action * vname * label * vname
@@ -15,10 +17,11 @@ type instruction
   | ISet of vname * fieldname * expr 
   [@@deriving show]
 
-(* Normalized query *)
+(* Une requête normalisée : une liste d'instructions *)
 type norm_query = NormQuery of instruction list
   [@@deriving show]
 
+(* Un programme normalisé : type de BDD et requête *)
 type norm_prog = NormProg of db_tp * norm_query
   [@@deriving show]
 
@@ -26,6 +29,7 @@ type norm_prog = NormProg of db_tp * norm_query
 let normalize_node_pattern act = function 
 | DeclPattern (v, l) -> (v, [IActOnNode(act, v, l)])
 | VarRefPattern (v) -> (v, [])
+
 
 (*
 * Fonction qui permet de traiter la création de noeud et de relation selon que l'on ait un pattern simple ou complexe
@@ -43,6 +47,7 @@ let rec normalize_pattern act = function
     )
   | [] -> (v1, instr1 @ [IActOnRel(act, v1, rl, v2)]) (* si instr2 ne contient pas d'instruction on ne le traite pas *)
 
+  
 let normalize_clause = function
 | Create pats -> List.concat_map (fun p -> snd (normalize_pattern CreateAct p)) pats
 | Match pats -> List.concat_map (fun p -> snd (normalize_pattern MatchAct p)) pats

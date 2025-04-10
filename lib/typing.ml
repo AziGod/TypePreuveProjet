@@ -1,3 +1,9 @@
+(* Ce fichier implémente le type checker d’un langage basé sur des graphes typés.
+Il s’assure que les nœuds, les relations et les instructions d’un programme sont
+bien utilisés en respectant les déclarations dans le graphe, en manipulant un
+environnement de typage mis à jour au fil des instructions. En cas d’erreur, il
+lève des exceptions précises pour indiquer la source du problème. *)
+
 open Graphstruct
 open Lang
 open Instr
@@ -22,6 +28,10 @@ let add_var vn t (env: environment) =
 let remove_var vn env = 
   { env with bindings = List.remove_assoc vn env.bindings }
 
+
+(* Cette fonction vérifie que le graphe typé est bien formé :
+Pas de doublons dans les labels de nœuds ou de relations.
+Toutes les relations référencent des types de nœuds déclarés. *)
 let check_graph_types (DBG (ntdecls, rtdecls)) : (unit, string) result =
   let node_labels = List.map (fun (DBN (lbl, _)) -> lbl) ntdecls in
   let unique_node_labels = List.sort_uniq String.compare node_labels in
@@ -52,6 +62,10 @@ let check_graph_types (DBG (ntdecls, rtdecls)) : (unit, string) result =
   
   if !errors = [] then Result.Ok () else Result.Error (String.concat "\n" (List.rev !errors))
 
+
+
+
+(* Fonction récursive qui infère le type d'une expression *)
 let rec tp_expr env = function
   | Const v -> (
       match v with
@@ -72,6 +86,9 @@ let rec tp_expr env = function
       | BCompar _ -> if t1 = t2 then BoolT else raise (TypeError "Comparison requires same types")
       | BLogic _ -> if t1 = BoolT && t2 = BoolT then BoolT else raise (TypeError "Logic operation requires bool types")
 
+
+
+(* Compare le type réel d'une expression avec le type attendu. *)
 let check_expr e et env : tc_result = 
   try 
     if tp_expr env e = et then Result.Ok env
@@ -80,6 +97,7 @@ let check_expr e et env : tc_result =
   | TypeError s -> Result.Error [s]
   | FieldAccError s -> Result.Error [s]
 
+  (* C’est la fonction principale pour vérifier chaque instruction. *)
   let tc_instr (i: instruction) (env: environment) : environment =
     let node_exists lbl = 
       List.exists (fun (DBN (l, _)) -> l = lbl) (nodes_of_graph env.types)
@@ -134,9 +152,14 @@ let check_expr e et env : tc_result =
          | Result.Ok _ -> env
          | Result.Error errs -> raise (TypeCheckError errs))
 
+(* Applique tc_instr à chaque instruction successivement, en mettant à jour l’environnement. *)
 let tc_instrs_stop instrs env =
   List.fold_left (fun env i -> tc_instr i env) env instrs
 
+(*Fonction principale :
+-Vérifie que le graphe est correct
+-Initialise l’environnement
+-Vérifie toutes les instructions du programme *)
 let typecheck _continue (NormProg (gt, NormQuery instrs) as np) : Instr.norm_prog =
   match check_graph_types gt with
   | Result.Error egt -> raise (TypeCheckError ["Undeclared types in graph:\n" ^ egt])
