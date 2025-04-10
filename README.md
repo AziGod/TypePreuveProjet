@@ -1,6 +1,5 @@
 # TypePreuveProjet
-# Groupe : Thibault MALESPINE
-#           Armand LECOURT
+# Groupe : Thibault MALESPINE / Armand LECOURT
 
 opam install ocaml-lsp-server -y
 eval $(opam env)    
